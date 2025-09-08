@@ -78,6 +78,8 @@ jobs:
         
     - name: Configure CMake for Qt6 only
       run: |
+        sed -i '1i\message(STATUS "DEBUG: CMake_VERSION is: ${CMAKE_VERSION}")' CMakeLists.txt
+        sed -i '1i\message(STATUS "DEBUG: FCITX_BUILD_QT5 is: ${FCITX_BUILD_QT5}")' CMakeLists.txt
         mkdir build
         cd build
         cmake .. \
