@@ -26,6 +26,7 @@ jobs:
           python3-pip \
           libfcitx5utils-dev\
           extra-cmake-modules\
+          gettext\
           libfontconfig1-dev \
           libfreetype-dev \
           libgtk-3-dev \
