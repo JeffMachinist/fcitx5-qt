@@ -24,27 +24,40 @@ jobs:
           cmake \
           pkg-config \
           python3-pip \
-          # Qt6 Wayland 和 X11 需要的最小化依赖
-          libxkbcommon-dev \
-          libxcb-keysyms1-dev \
-          libxcb-image0-dev \
-          libxcb-shm0-dev \
+          libfontconfig1-dev \
+          libfreetype-dev \
+          libgtk-3-dev \
+          libx11-dev \
+          libx11-xcb-dev \
+          libxcb-cursor-dev \
+          libxcb-glx0-dev \
           libxcb-icccm4-dev \
+          libxcb-image0-dev \
+          libxcb-keysyms1-dev \
+          libxcb-randr0-dev \
+          libxcb-render-util0-dev \
+          libxcb-shape0-dev \
+          libxcb-shm0-dev \
+          libxcb-sync-dev \
+          libxcb-util-dev \
+          libxcb-xfixes0-dev \
+          libxcb-xkb-dev \
+          libxcb1-dev \
+          libxext-dev \
+          libxfixes-dev \
+          libxi-dev \
+          libxkbcommon-dev \
+          libxkbcommon-x11-dev \
+          libxrender-dev\
           libdbus-1-dev \
           libwayland-dev \
           libegl-dev \
           libgl-dev \
-          # Fcitx5 D-Bus Addons 可能需要 Boost
           libboost-dev
 
     - name: Install Qt6 SDK (using aqtinstall)
       run: |
         pip install aqtinstall
-        # ⚠️ 请确认你需要的 Qt 6 版本。Qt 6.9.1 目前不存在。
-        # 这里以 Qt 6.6.2 为例。
-        # desktop: 包含 Core, Gui, Widgets
-        # dbus: Qt DBus 模块 (Qt6::DBus)
-        # wayland: Qt Wayland 模块 (Qt6::WaylandClient, Qt6::WaylandGlobalPrivate)
         aqt install 6.9.1 linux desktop dbus wayland
       env:
         AQT_INSTALL_DIR: ${{ runner.temp }}/Qt # 将 Qt SDK 安装到 Runner 的临时目录
