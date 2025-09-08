@@ -59,15 +59,13 @@ jobs:
       run: pip install aqtinstall
 
     - name: Install Qt6 SDK (using aqtinstall)
-      run: aqt install-qt linux desktop 6.9.1
-      env:
-        AQT_INSTALL_DIR: ${{ runner.temp }}/Qt
-
+      run: aqt install-qt linux desktop 6.9.1 --outputdir ${{ runner.temp }}/Qt
+        
     - name: Set up Qt6 environment variables
       run: |
-        QT_BASE_DIR=$(ls -d "${{ runner.temp }}/Qt/6.9.1/linux_gcc_64" | head -n 1) # 明确使用 6.9.1
+        QT_BASE_DIR=$(ls -d "${{ runner.temp }}/Qt/6.9.1/gcc_64" | head -n 1)
         if [ -z "$QT_BASE_DIR" ]; then
-          echo "Error: Qt 6.9.1 installation directory not found."
+          echo "Error: Qt 6.9.1 installation directory not found. The 'Install Qt6 SDK' step failed."
           exit 1
         fi
         echo "QT_INSTALL_DIR=$QT_BASE_DIR" >> $GITHUB_ENV
