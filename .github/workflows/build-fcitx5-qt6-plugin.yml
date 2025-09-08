@@ -115,4 +115,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: fcitx5-qt6-platforminputcontext-plugin
-        path: ${{ runner.temp }}/install # 上传整个安装目录
+        path: ${{ env.QT_INSTALL_DIR }}/plugins/platforminputcontexts/
