@@ -1,0 +1,104 @@
+name: Build Fcitx5 Qt6 Platform Input Context Plugin
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # 使用最新的Ubuntu runner
+
+    steps:
+    - name: Checkout Fcitx5 Qt project
+      uses: actions/checkout@v4
+
+    - name: Install minimal system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          git \
+          cmake \
+          pkg-config \
+          python3-pip \
+          # Qt6 Wayland 和 X11 需要的最小化依赖
+          libxkbcommon-dev \
+          libxcb-keysyms1-dev \
+          libxcb-image0-dev \
+          libxcb-shm0-dev \
+          libxcb-icccm4-dev \
+          libdbus-1-dev \
+          libwayland-dev \
+          libegl-dev \
+          libgl-dev \
+          # Fcitx5 D-Bus Addons 可能需要 Boost
+          libboost-dev
+
+    - name: Install Qt6 SDK (using aqtinstall)
+      run: |
+        pip install aqtinstall
+        # ⚠️ 请确认你需要的 Qt 6 版本。Qt 6.9.1 目前不存在。
+        # 这里以 Qt 6.6.2 为例。
+        # desktop: 包含 Core, Gui, Widgets
+        # dbus: Qt DBus 模块 (Qt6::DBus)
+        # wayland: Qt Wayland 模块 (Qt6::WaylandClient, Qt6::WaylandGlobalPrivate)
+        aqt install 6.9.1 linux desktop dbus wayland
+      env:
+        AQT_INSTALL_DIR: ${{ runner.temp }}/Qt # 将 Qt SDK 安装到 Runner 的临时目录
+
+    - name: Set up Qt6 environment variables
+      run: |
+        # 查找实际的 Qt 安装路径 (例如: /home/runner/temp/Qt/6.6.2/gcc_64)
+        QT_BASE_DIR=$(ls -d "${{ runner.temp }}/Qt/6.6.2/gcc_64" | head -n 1)
+        if [ -z "$QT_BASE_DIR" ]; then
+          echo "Error: Qt 6.6.2 installation directory not found."
+          exit 1
+        fi
+        echo "QT_INSTALL_DIR=$QT_BASE_DIR" >> $GITHUB_ENV
+        echo "PATH=$QT_BASE_DIR/bin:$PATH" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=$QT_BASE_DIR/lib/cmake:$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+        echo "LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+
+    - name: Configure CMake for Qt6 only
+      run: |
+        mkdir build
+        cd build
+        cmake .. \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=${{ runner.temp }}/install \
+          -DFCITX_BUILD_QT4=OFF \
+          -DFCITX_BUILD_QT5=OFF \
+          -DFCITX_BUILD_QT6=ON \
+          -DENABLE_X11=ON \
+          -DENABLE_WAYLAND=ON \
+          -DQT6_WAYLAND_WORKAROUND=ON \
+          -DWITH_FCITX_PLUGIN_NAME=ON \
+          -DBUILD_STATIC_PLUGIN=OFF \
+          -DBUILD_TESTS=OFF \
+          -DBUILD_EXAMPLES=OFF \
+          -DBUILD_GUI_WRAPPER=OFF \
+          -DBUILD_IMMODULE_PROBING=OFF \
+          -DBUILD_WIDGETS_ADDONS=OFF \
+          -DBUILD_QUICKPHRASE_EDITOR=OFF
+          # 注意：-DBUILD_DBUS_ADDONS=ON 不需要显式设置，
+          # 因为 platforminputcontext 依赖它，CMake 会自动拉取。
+          # 顶层 CMakeLists.txt 会根据 Fcitx5Qt6::DBusAddons 的定义自动处理。
+
+    - name: Build project
+      run: |
+        cd build
+        cmake --build . --config Release -j$(nproc)
+
+    - name: Install compiled files
+      run: |
+        cd build
+        cmake --install . --config Release
+
+    - name: Upload compiled plugin artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: fcitx5-qt6-platforminputcontext-plugin
+        path: ${{ runner.temp }}/install # 上传整个安装目录
