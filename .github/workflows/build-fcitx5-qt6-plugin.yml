@@ -55,12 +55,13 @@ jobs:
           libgl-dev \
           libboost-dev
 
+    - name: Install aqtinstall
+      run: pip install aqtinstall
+
     - name: Install Qt6 SDK (using aqtinstall)
-      run: |
-        pip install aqtinstall
-        aqt install-qt linux desktop 6.9.1 -m dbus wayland
+      run: aqt install-qt linux desktop 6.9.1
       env:
-        AQT_INSTALL_DIR: ${{ runner.temp }}/Qt # 将 Qt SDK 安装到 Runner 的临时目录
+        AQT_INSTALL_DIR: ${{ runner.temp }}/Qt
 
     - name: Set up Qt6 environment variables
       run: |
