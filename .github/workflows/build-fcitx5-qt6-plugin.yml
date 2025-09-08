@@ -58,7 +58,7 @@ jobs:
     - name: Install Qt6 SDK (using aqtinstall)
       run: |
         pip install aqtinstall
-        aqt install 6.9.1 linux desktop dbus wayland
+        aqt install-qt 6.9.1 linux desktop dbus wayland
       env:
         AQT_INSTALL_DIR: ${{ runner.temp }}/Qt # 将 Qt SDK 安装到 Runner 的临时目录
 
